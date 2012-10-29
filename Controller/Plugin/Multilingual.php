@@ -26,17 +26,16 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
 {
 
 	protected $_localeParam;
-	protected $_routeTranslatorRegistryKey;
+	
 	/**
      * Global default translation adapter
      * @var Zend_Translate
      */
     protected static $_translatorDefault;
 	
-	public function __construct($localeParm, $routeTranslatorRegistryKey)
+	public function __construct($localeParm)
 	{
 		$this->_localeParam = $localeParm;
-		$this->_routeTranslatorRegistryKey = $routeTranslatorRegistryKey;
 		//parent::__construct();
 	}
 	
@@ -88,6 +87,10 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
         	}
         	
         	if (Zend_Locale::isLocale($locale)) {
+        		
+        		$router = $front->getRouter();
+	    		$router->setGlobalParam($this->_localeParam, $locale);
+	    			
         		if ($translator->isAvailable($locale)) {
         			// set the locale for the global translator
         			$translator->setLocale($locale);
@@ -119,6 +122,7 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
 	    				$locale = new Zend_Locale($locale);
 	    				$this->_response->setHeader('Content-Language', (string)$locale->getLanguage());
 	    			}
+	    			
 	    			
 	    			// Also set the locale for the route translator
 	    			//if (isset($this->_routeTranslatorRegistryKey)) {
