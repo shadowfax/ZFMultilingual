@@ -29,6 +29,7 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 	protected $_mustTranslateLocale;
 	
 	protected $_translate;
+	protected $_routeTranslatorRegistryKey;
 	
 	/**
 	 * Get the locale parameter in the route string
@@ -165,14 +166,20 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 	{
 		$front = Zend_Controller_Front::getInstance();
 		
-		$localeParam = substr($this->_localeParam, 1);
+		//$localeParam = substr($this->_localeParam, 1);
+		
+		$defaults = array();
+		
+		$module 	= strtolower($front->getDefaultControllerName());
+		$controller = strtolower($front->getDefaultControllerName());
+		$action 	= strtolower($front->getDefaultAction());
 		
 		return array(
-			'module'		=> $front->getDefaultModule(),
-			'controller'	=> $front->getDefaultControllerName(),
-			'action'		=> $front->getDefaultAction()
-			
+			'module'		=> (empty($module) ? 'default' : $module), 
+			'controller'	=> (empty($controller) ? 'index' : $controller),
+			'action'		=> (empty($action) ? 'index' : $action)
 		);
+		return $defaults;
 	}
 	
 	/**
@@ -183,9 +190,21 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 	{
 		if (!isset($this->_translate)) {
 			$options = $this->getOptions();
+			
+			$registryKey = "Zend_Router_Translate";
+			
+			if (isset($options['registry_key'])) {
+				if (strlen(trim($options['registry_key'])) > 0) {
+					$registryKey = $options['registry_key'];
+				}
+			}
 			if (isset($options['translate'])) {
 				$this->_translate = new Zend_Translate($options['translate']);
 			}
+			
+			// set the registry
+			Zend_Registry::set($registryKey, $this->_translate);
+			$this->_routeTranslatorRegistryKey = $registryKey;
 		}
 		
 		return $this->_translate;
@@ -203,9 +222,13 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 		// locale param name
 		$localeParam = $this->getLocaleParam();
 		
+		$defaults = $this->getRouteDefaults();
+		$defaults[$localeParam] = 'en';
+		
+		//$route = new ZFMultilingual_Controller_Router_Route_Multilingual(
 		$route = new Zend_Controller_Router_Route(
 			":" . $localeParam . '/',
-			$this->getRouteDefaults(),
+			$defaults,
 			array(
 				$localeParam => $this->getLocaleRequirements()
 			),
@@ -213,8 +236,14 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 			Zend_Locale::getDefault()
 		);
 		
+		// Set the locale param
+		//$route->setLocaleParameter($localeParam);
+		
+		// Add the route
 		$router = $front->getRouter();
 		$router->addRoute('language', $route);
+		
+		return $route;
 	}
 	
 	/**
@@ -226,7 +255,10 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 	{
 		$bootstrap = $this->getBootstrap();
 		$bootstrap->bootstrap('frontController');
-				
+
+		// Get front controller
+		$front = Zend_Controller_Front::getInstance();
+		
 		// Initialize the translator
 		$this->_initTranslate();
 		
@@ -236,13 +268,52 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 			if (!is_array($options['domain'])) $this->setDomainRoute(array('name' => $options['domain']));
 			else $this->setDomainRoute($options['domain']);	
 		} else {
-			$this->setPathRoute();	
+			$languageRoute = $this->setPathRoute();	
 		}
+		
+		// Get the router
+		$router = $front->getRouter();
+		$router->removeDefaultRoutes();
+		
+		/*
+		// Chain the module route and make it default!
+		// this makes all module work under the language route!
+		
+		$moduleRoute = new Zend_Controller_Router_Route_Module(
+			$this->getRouteDefaults(),
+			$front->getDispatcher(),
+			$front->getRequest()
+		);
+		$moduleRoute->isAbstract(true);
+				
+		$defaultChain = new Zend_Controller_Router_Route_Chain();
+		$defaultChain->chain($languageRoute);
+		$defaultChain->chain($moduleRoute);
+		
+		// Add the route
+		$router->addRoute('default', $defaultChain);
+		*/
+		// Add a route with translated segments
+		
+		$translateRoute = new ZFMultilingual_Controller_Router_Route_Multilingual(
+			":@module/:@controller/:@action",
+			$this->getRouteDefaults(),
+			array(),
+			$this->_translate,
+			Zend_Locale::getDefault()
+		);
+		$translateRoute->setLocaleParameter($this->getLocaleParam());
+		
+		$translateChain = new ZFMultilingual_Controller_Router_Route_Chain();
+		$translateChain->chain($languageRoute);
+		$translateChain->chain($translateRoute);
+		
+		$router->addRoute('default', $translateChain);
 		
 		// ToDo: chain my routes!!!
 		
 		// Register the plugin
 		$front = Zend_Controller_Front::getInstance();
-        $front->registerPlugin(new ZFMultilingual_Controller_Plugin_Multilingual($this->getLocaleParam()));
+        $front->registerPlugin(new ZFMultilingual_Controller_Plugin_Multilingual($this->getLocaleParam(), $this->_routeTranslatorRegistryKey));
 	}
 }

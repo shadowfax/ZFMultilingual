@@ -26,16 +26,17 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
 {
 
 	protected $_localeParam;
-	
+	protected $_routeTranslatorRegistryKey;
 	/**
      * Global default translation adapter
      * @var Zend_Translate
      */
     protected static $_translatorDefault;
 	
-	public function __construct($localeParm)
+	public function __construct($localeParm, $routeTranslatorRegistryKey)
 	{
 		$this->_localeParam = $localeParm;
+		$this->_routeTranslatorRegistryKey = $routeTranslatorRegistryKey;
 		//parent::__construct();
 	}
 	
@@ -94,7 +95,7 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
         			// Set language to global param so that our language route can
 	    			// fetch it nicely.
 	    			$router = $front->getRouter();
-	    			$router->setGlobalParam($this->_localeParam, $locale);
+	    			//$router->setGlobalParam($this->_localeParam, $locale);
 	    			
 	    			// Set the locale
 	    			$zendLocale = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('locale');
@@ -119,6 +120,12 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
 	    				$this->_response->setHeader('Content-Language', (string)$locale->getLanguage());
 	    			}
 	    			
+	    			// Also set the locale for the route translator
+	    			//if (isset($this->_routeTranslatorRegistryKey)) {
+	    			//	if (Zend_Registry::isRegistered($this->_routeTranslatorRegistryKey)) {
+	    			//		Zend_Registry::get($this->_routeTranslatorRegistryKey)->setLocale($locale);
+	    			//	}
+	    			//}
         		} else {
         			// The locale is not available!
         			$error = new ArrayObject(array(), ArrayObject::ARRAY_AS_PROPS);
