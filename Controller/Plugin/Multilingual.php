@@ -95,9 +95,30 @@ class ZFMultilingual_Controller_Plugin_Multilingual extends Zend_Controller_Plug
 	    			// fetch it nicely.
 	    			$router = $front->getRouter();
 	    			$router->setGlobalParam($this->_localeParam, $locale);
+	    			
+	    			// Set the locale
+	    			$zendLocale = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('locale');
+	    			if ($zendLocale instanceof Zend_Locale) {
+	    				$zendLocale->setLocale($locale);
+	    			} elseif (Zend_Registry::isRegistered('Zend_Locale')) {
+	    				$zendLocale = Zend_Registry::get('Zend_Locale');
+	    				if ($zendLocale instanceof Zend_Locale) {
+	    					$zendLocale->setLocale($locale);
+	    				}
+	    			} else {
+	    				// create a new locale and register it!
+	    				$zendLocale = new Zend_Locale($locale);
+	    				Zend_Registry::set('Zend_Locale', $locale);
+	    			}
 
-	    			// Set the language in the HTTP headers
-	    			$this->_response->setHeader('Content-Language', (string)$locale);
+	    			// Set the Content-Language HTTP header to show the current locale.
+	    			if ($locale instanceof Zend_Locale) {
+	    				$this->_response->setHeader('Content-Language', (string)$locale->getLanguage());
+	    			} else {
+	    				$locale = new Zend_Locale($locale);
+	    				$this->_response->setHeader('Content-Language', (string)$locale->getLanguage());
+	    			}
+	    			
         		} else {
         			// The locale is not available!
         			$error = new ArrayObject(array(), ArrayObject::ARRAY_AS_PROPS);
