@@ -230,7 +230,7 @@ class ZFMultilingual_Core
 		if (empty($this->_domain)) {
 			// The locale is set in the path
 			$this->_localeRoute = New Zend_Controller_Router_Route(
-				':' . $this->_localeParameter .'/',
+				':' . $this->_localeParameter,
 				$defaults,
 				$langRequirements,
 				$this->_translator,
@@ -241,10 +241,10 @@ class ZFMultilingual_Core
 		unset($langRequirements);
 		
 		// Create a default module route
-		$moduleRoute = new Zend_Controller_Router_Route(
-			':@module/:@controller/:@action/*',
+		$moduleRoute = new ZFMultilingual_Controller_Router_Route_Module(
 			$defaults,
-			$requirements,
+			$front->getDispatcher(),
+			$front->getRequest(),
 			$this->_translator,
 			Zend_Locale::getDefault()
 		);

@@ -243,64 +243,6 @@ class ZFMultilingual_Application_Resource_Multilingual extends Zend_Application_
 
 		$globalization = new ZFMultilingual_Core($this->getOptions());
 		
-		// Get front controller
-//		$front = Zend_Controller_Front::getInstance();
-		
-		// Initialize the translator
-//		$this->_initTranslate();
-		
-//		$options = $this->getOptions();
-		
-//		if (isset($options['domain'])) {
-//			if (!is_array($options['domain'])) $this->setDomainRoute(array('name' => $options['domain']));
-//			else $this->setDomainRoute($options['domain']);	
-//		} else {
-//			$languageRoute = $this->setPathRoute();	
-//		}
-		
-//		// Get the router
-//		$router = $front->getRouter();
-//		$router->removeDefaultRoutes();
-		
-		/*
-		// Chain the module route and make it default!
-		// this makes all module work under the language route!
-		
-		$moduleRoute = new Zend_Controller_Router_Route_Module(
-			$this->getRouteDefaults(),
-			$front->getDispatcher(),
-			$front->getRequest()
-		);
-		$moduleRoute->isAbstract(true);
-				
-		$defaultChain = new Zend_Controller_Router_Route_Chain();
-		$defaultChain->chain($languageRoute);
-		$defaultChain->chain($moduleRoute);
-		
-		// Add the route
-		$router->addRoute('default', $defaultChain);
-		*/
-		// Add a route with translated segments
-		
-//		$translateRoute = new ZFMultilingual_Controller_Router_Route_Multilingual(
-//			":@module/:@controller/:@action",
-//			$this->getRouteDefaults(),
-//			array(),
-//			$this->_translate,
-//			Zend_Locale::getDefault()
-//		);
-//		$translateRoute->setLocaleParameter($this->getLocaleParameter());
-//		
-//		$translateChain = new ZFMultilingual_Controller_Router_Route_Chain();
-//		$translateChain->chain($languageRoute);
-//		$translateChain->chain($translateRoute);
-//		
-//		$router->addRoute('default', $translateChain);
-//		
-//		// ToDo: chain my routes!!!
-		
-		// Register the plugin
-//		$front = Zend_Controller_Front::getInstance();
-//        $front->registerPlugin(new ZFMultilingual_Controller_Plugin_Multilingual($this->getLocaleParameter(), $this->_routeTranslatorRegistryKey));
+		return $globalization;
 	}
 }
