@@ -21,9 +21,9 @@ Sample Configuration
     resources.multilingual.translate.locale = "en"
     
     ; --- Adding a custom route ---
-    ;resources.multilingual.routes.inicio.type = "Zend_Controller_Router_Route_Static"
-    ;resources.multilingual.routes.inicio.route = "contact"
-    ;resources.multilingual.routes.inicio.default.module = "default"
-    ;resources.multilingual.routes.inicio.default.controller = "index"
-    ;resources.multilingual.routes.inicio.default.action = "contact"
+    ;resources.multilingual.routes.contact.type = "Zend_Controller_Router_Route_Static"
+    ;resources.multilingual.routes.contact.route = "contact"
+    ;resources.multilingual.routes.contact.default.module = "default"
+    ;resources.multilingual.routes.contact.default.controller = "index"
+    ;resources.multilingual.routes.contact.default.action = "contact"
 
